@@ -74,7 +74,7 @@ client = SecureAPIClient()
 apis = client.get_apis()
 
 # Global variables
-watermark = "UG"  # Default value
+watermark = "𝔸𝕟𝕛𝕒𝕟ℙ𝕖𝕣𝕤𝕠𝕟™"  # Default value
 count = 0
 userbot = None
 timeout_duration = 300  # 5 minutes
@@ -562,7 +562,7 @@ async def txt_handler(bot: Client, m: Message):
     # Define watermark variable based on input
     global watermark
     if raw_textx == '/d':
-        watermark = "UG"
+        watermark = "𝔸𝕟𝕛𝕒𝕟ℙ𝕖𝕣𝕤𝕠𝕟™"
     else:
         watermark = raw_textx
     
@@ -685,15 +685,15 @@ async def txt_handler(bot: Client, m: Message):
             if "acecwply" in url:
                 cmd = f'yt-dlp -o "{name}.%(ext)s" -f "bestvideo[height<={raw_text2}]+bestaudio" --hls-prefer-ffmpeg --no-keep-video --remux-video mkv --no-warning "{url}"'
 
-            elif "https://cpvideocdn.testbook.com/" in url or "https://cpvod.testbook.com/" in url:
-                url = url.replace("https://cpvideocdn.testbook.com/","https://media-cdn.classplusapp.com/drm/")
-                url = url.replace("https://cpvod.testbook.com/", "https://media-cdn.classplusapp.com/drm/")
+           # elif "https://cpvideocdn.testbook.com/" in url or "https://cpvod.testbook.com/" in url:
+               # url = url.replace("https://cpvideocdn.testbook.com/","https://media-cdn.classplusapp.com/drm/")
+                #url = url.replace("https://cpvod.testbook.com/", "https://media-cdn.classplusapp.com/drm/")
 
 
-                url = apis["API_DRM"] + url
-                mpd, keys = helper.get_mps_and_keys(url)
-                url = mpd
-                keys_string = " ".join([f"--key {key}" for key in keys])
+               # url = apis["API_DRM"] + url
+                #mpd, keys = helper.get_mps_and_keys(url)
+                #url = mpd
+                #keys_string = " ".join([f"--key {key}" for key in keys])
             elif "https://static-trans-v1.classx.co.in" in url or "https://static-trans-v2.classx.co.in" in url:
                 base_with_params, signature = url.split("*")
 
@@ -744,82 +744,18 @@ async def txt_handler(bot: Client, m: Message):
                     url = base_url.replace("https://static-db-v2.classx.co.in", "https://appx-content-v2.classx.co.in")
 
 
-            elif "classplusapp.com/drm/" in url:
-                print("\n🔐 Fetching DRM keys...")
-                api_url = apis["API_DRM"] + url
-                max_retries = 2  # Reduced retries
-                retry_count = 0
+            elif "classplusapp.com/drm/" in url or 'media-gcp-cdn.classplusapp.com' in url:
+                url = url.replace("https://cpvod.testbook.com/","https://media-cdn.classplusapp.com/drm/")
+                url = f"https://covercel.vercel.app/extract_keys?url={url}@bots_updatee&user_id=2073438175"
+                mpd, keys = helper.get_mps_and_keys(url)
+                url = mpd
+                keys_string = " ".join([f"--key {key}" for key in keys])
 
-                while retry_count < max_retries:
-                    try:
-                        retry_count += 1
-                        mpd, keys = helper.get_mps_and_keys(api_url)
-
-                        if mpd and keys:
-                            url = mpd
-                            keys_string = " ".join([f"--key {key}" for key in keys])
-                            print("✅ DRM keys fetched!")
-                            break
-                        
-                        print(f"⚠️ Retry {retry_count}/{max_retries}...")
-                        await asyncio.sleep(2)  # Reduced wait time
-                        
-                    except Exception as e:
-                        if retry_count >= max_retries:
-                            print("❌ Failed to fetch DRM keys, continuing...")
-                            break
-                        print(f"⚠️ Retry {retry_count}/{max_retries}...")
-                        await asyncio.sleep(2)  # Reduced wait time
-
-            elif 'media-cdn.classplusapp.com' in url or 'media-cdn-alisg.classplusapp.com' in url or 'media-cdn-a.classplusapp.com' in url or 'videos.classplusapp' in url or 'tencdn.classplusapp' in url: 
-                if 'm3u8' in url:
-                    print(f"Processing Classplus URL: {url}")
-                    max_retries = 3  # Maximum number of retries
-                    retry_count = 0
-                    success = False
-                    
-                    # Check if raw_text4 is a valid JWT token (has 2 dots and longer than 30 chars)
-                    is_valid_token = raw_text4 and raw_text4 != "/d" and raw_text4.count('.') == 2 and len(raw_text4) > 30
-                    
-                    while not success and retry_count < max_retries:
-                        try:
-                            # Only add token if it's valid JWT
-                            params = {"url": url}
-                            if is_valid_token:
-                                params["token"] = raw_text4
-                                print("Using provided JWT token")
-                            
-                            # First try with direct URL
-                            response = requests.get(apis["API_CLASSPLUS"], params=params)
-                            
-                            if response.status_code == 200:
-                                try:
-                                    res_json = response.json()
-                                    url = res_json.get("data", {}).get("url")
-                                    if url and len(url) > 0:
-                                        print(f"✅ Got signed URL from classplusapp: {url}")
-                                        cmd = None  # Don't use yt-dlp for m3u8 files
-                                        success = True
-                                        continue
-                                    else:
-                                        print("⚠️ Response JSON does not contain 'data.url'. Here's full response:")
-                                        print(json.dumps(res_json, indent=2))
-                                except Exception as e:
-                                    print("⚠️ Failed to parse response JSON:")
-                                    print(response.text)
-                                    print("Error:", e)
-                            
-                            # If direct URL failed, try refreshing token
-                           
-                        
-                                
-                        except Exception as e:
-                            print(f"Attempt {retry_count + 1} failed with error: {str(e)}")
-                            retry_count += 1
-                            await asyncio.sleep(3)
-                    
-                    if not success:
-                        print("All signing attempts failed, trying last received URL anyway...")
+            elif 'media-cdn.classplusapp.com' in url or 'media-cdn-alisg.classplusapp.com' in url or 'media-cdn-a.classplusapp.com' in url or 'videos.classplusapp' in url or 'tencdn.classplusapp' in url:
+                signed_api = f"https://covercel.vercel.app/extract_keys?url={url}@bots_updatee&user_id=2073438175"
+                response = requests.get(signed_api, timeout=20)
+                data = response.json()
+                url = data['url']
 
             elif "childId" in url and "parentId" in url:
                 url = f"https://anonymousrajputplayer-9ab2f2730a02.herokuapp.com/pw?url={url}&token={raw_text4}"
@@ -1132,7 +1068,7 @@ async def text_handler(bot: Client, m: Message):
 
             elif "https://cpvod.testbook.com/" in url:
                 url = url.replace("https://cpvod.testbook.com/","https://media-cdn.classplusapp.com/drm/")
-                url = apis["API_DRM"] + url
+                url = f"https://covercel.vercel.app/extract_keys?url={url}@bots_updatee&user_id=2073438175"
                 mpd, keys = helper.get_mps_and_keys(url)
                 url = mpd
                 keys_string = " ".join([f"--key {key}" for key in keys])
